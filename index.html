@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中山大学百年校庆头像生成器</title>
-    
-    <!-- 【修改1】网页图标：修改这里的 href 路径为你自己的 logo 图片路径 -->
-    <link rel="icon" href="./images/logo.png" type="image/png">
+    <!-- logo 图片路径 -->
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn4OoPC90ZXh0Pjwvc3ZnPg==" type="image/svg+xml">
     <!-- 引入 Fabric.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
@@ -76,10 +75,9 @@
             <label>选择边框 (图片A):</label>
             <select id="frameSelect">
                 
-                <!-- 这里为了让你直接能看效果，用了一张 Base64 的红色半透明空心框作为演示 -->
+                <!-- 用了一张 Base64 的红色半透明空心框作为测试 -->
                 <!-- 实际使用时，把 value 换成相对路径，如 value="./images/frame1.png" -->
                 <!-- option value="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY0NzU3IiBzdHJva2Utd2lkdGg9IjQwIiAvPjwvc3ZnPg==">默认红框 (演示)</option-->
-                <!-- 添加你自己的图片： -->
                 <option value="./images/sysu_100.png">相框 1</option>
                 <option value="./images/sysu_100_2.png">相框 2</option>
                 <option value="./images/sysu_stamp.png.png">相框 3</option>
@@ -101,7 +99,7 @@
             <label>亮度:</label>
             <input type="range" id="brightnessSlider" min="-1" max="1" step="0.05" value="0">
             
-            <!-- 【修改3】新增旋转控制条 -->
+            <!-- 旋转控制条 -->
             <label style="margin-left: 10px;">旋转:</label>
             <input type="range" id="rotationSlider" min="-180" max="180" step="1" value="0">
         </div>
@@ -125,7 +123,7 @@
     // 网页显示的最大宽度（可根据网页设计调整，导出时分辨率不受此限制）
     const MAX_DISPLAY_WIDTH = 500; 
 
-    // 【修改2】动态加载顶层透明图片A，并自动适应其原始尺寸和比例
+    // 动态加载顶层透明图片A，并自动适应其原始尺寸和比例
     function loadOverlayImage(url) {
         // 先读取图片的真实宽高
         fabric.Image.fromURL(url, function(img) {
@@ -220,14 +218,14 @@
         canvas.renderAll();
     });
 
-    // 【修改3】监听旋转调整
+    // 监听旋转调整
     document.getElementById('rotationSlider').addEventListener('input', function(e) {
         if (!userImageObj) return;
         userImageObj.set('angle', parseFloat(e.target.value));
         canvas.renderAll();
     });
 
-    // 小优化：如果用户用鼠标旋转了图片，自动同步更新旋转滑动条的数值
+    // 如果用户用鼠标旋转了图片，自动同步更新旋转滑动条的数值
     canvas.on('object:rotating', function(e) {
         if (e.target === userImageObj) {
             let angle = e.target.angle;
@@ -243,11 +241,10 @@
         canvas.renderAll();
 
         // multiplier 决定了导出的清晰度。
-        // 因为我们在网页上把画布缩放到了 500px 宽。如果你想导出 1000px 宽的超清图，把这里设为 2 即可 (500*2=1000)。
         const dataURL = canvas.toDataURL({
             format: 'png',
             quality: 1,
-            multiplier: 2 // 导出分辨率放大 2 倍，保证高清
+            multiplier: 3 // 导出分辨率放大 3 倍
         });
 
         const link = document.createElement('a');
