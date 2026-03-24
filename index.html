@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片合成生成器</title>
+    <!-- 引入 Fabric.js，前端最强大的 Canvas 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        canvas {
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        button, input[type="file"]::file-selector-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover, input[type="file"]::file-selector-button:hover {
+            background: #0056b3;
+        }
+        .hint {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎨 自定义头像/海报生成器</h2>
+    
+    <div class="controls">
+        <!-- 1. 选择预设透明图层 -->
+        <div class="control-group">
+            <label>选择边框 (图片A):</label>
+            <select id="frameSelect">
+                <!-- 这里为了让你直接能看效果，用了一张 Base64 的红色半透明空心框作为演示 -->
+                <!-- 实际使用时，把 value 换成相对路径，如 value="./images/frame1.png" -->
+                <option value="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY0NzU3IiBzdHJva2Utd2lkdGg9IjQwIiAvPjwvc3ZnPg==">默认红框 (演示)</option>
+                <!-- 添加你自己的图片： -->
+                <!-- <option value="./images/frame1.png">相框 1</option> -->
+                <!-- <option value="./images/frame2.png">相框 2</option> -->
+            </select>
+        </div>
+
+        <!-- 2. 上传用户图片 -->
+        <div class="control-group">
+            <label>上传图片 (图片B):</label>
+            <input type="file" id="imageUpload" accept="image/*">
+        </div>
+
+        <!-- 3. 调整参数 -->
+        <div class="control-group">
+            <label>亮度调整:</label>
+            <input type="range" id="brightnessSlider" min="-1" max="1" step="0.05" value="0">
+        </div>
+    </div>
+
+    <!-- 4. 画布区域 -->
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+    <div class="hint">💡 提示：上传图片后，可以在画板中使用鼠标拖拽、放大缩小、旋转图片。</div>
+
+    <!-- 5. 导出按钮 -->
+    <div style="margin-top: 20px;">
+        <button id="downloadBtn" style="background: #28a745; font-size: 16px; padding: 10px 20px;">⬇️ 生成并下载</button>
+    </div>
+</div>
+
+<script>
+    // 1. 初始化 Fabric 画布
+    const canvas = new fabric.Canvas('myCanvas');
+    let userImageObj = null; // 用于保存用户上传的图片对象
+
+    // 2. 加载顶层透明图片 (图片A)
+    function loadOverlayImage(url) {
+        // 使用 setOverlayImage 可以将图片固定在最顶层，且不会遮挡对底层图片的鼠标操作
+        canvas.setOverlayImage(url, canvas.renderAll.bind(canvas), {
+            originX: 'left',
+            originY: 'top',
+            crossOrigin: 'anonymous' // 解决跨域导出问题
+        });
+    }
+
+    // 初始加载下拉菜单中选中的边框
+    loadOverlayImage(document.getElementById('frameSelect').value);
+
+    // 监听下拉菜单切换边框
+    document.getElementById('frameSelect').addEventListener('change', function(e) {
+        loadOverlayImage(e.target.value);
+    });
+
+    // 3. 处理用户图片上传 (图片B)
+    document.getElementById('imageUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const dataUrl = event.target.result;
+            
+            fabric.Image.fromURL(dataUrl, function(img) {
+                // 如果之前有上传过图片，先移除旧的
+                if (userImageObj) {
+                    canvas.remove(userImageObj);
+                }
+
+                userImageObj = img;
+
+                // 缩放图片使其适应画布大小
+                const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                img.set({
+                    scaleX: scale,
+                    scaleY: scale,
+                    originX: 'center',
+                    originY: 'center',
+                    left: canvas.width / 2,
+                    top: canvas.height / 2
+                });
+
+                // 应用滤镜以支持亮度调整
+                img.filters.push(new fabric.Image.filters.Brightness({ brightness: 0 }));
+                img.applyFilters();
+
+                // 添加到底层并设为选中状态
+                canvas.add(img);
+                canvas.setActiveObject(img);
+                
+                // 将用户图片放到最底层（确保被 overlay 边框覆盖）
+                canvas.sendToBack(img);
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // 4. 处理亮度调整
+    document.getElementById('brightnessSlider').addEventListener('input', function(e) {
+        if (!userImageObj) return; // 如果还没上传图片则忽略
+
+        const brightnessVal = parseFloat(e.target.value);
+        // Fabric 5.x 中 brightness 值域为 -1 到 1
+        userImageObj.filters[0].brightness = brightnessVal;
+        userImageObj.applyFilters();
+        canvas.renderAll();
+    });
+
+    // 5. 导出并下载合成后的图片
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+        // 导出前取消选中状态（去除选中的虚线框）
+        canvas.discardActiveObject();
+        canvas.renderAll();
+
+        // 导出高质量 PNG
+        const dataURL = canvas.toDataURL({
+            format: 'png',
+            quality: 1,
+            multiplier: 1 // 如果需要导出更高清的图片（如 2 倍），改成 2 即可
+        });
+
+        // 触发下载
+        const link = document.createElement('a');
+        link.download = 'my-custom-image.png';
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+</script>
+</body>
+</html>
