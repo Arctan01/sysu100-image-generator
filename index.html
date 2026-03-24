@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>图片合成生成器</title>
-    <!-- 引入 Fabric.js，前端最强大的 Canvas 库 -->
+    <title>中山大学百年校庆头像生成器</title>
+    <!-- 引入 Fabric.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         body {
@@ -70,10 +70,17 @@
             <select id="frameSelect">
                 <!-- 这里为了让你直接能看效果，用了一张 Base64 的红色半透明空心框作为演示 -->
                 <!-- 实际使用时，把 value 换成相对路径，如 value="./images/frame1.png" -->
-                <option value="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY0NzU3IiBzdHJva2Utd2lkdGg9IjQwIiAvPjwvc3ZnPg==">默认红框 (演示)</option>
+                <!-- option value="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY0NzU3IiBzdHJva2Utd2lkdGg9IjQwIiAvPjwvc3ZnPg==">默认红框 (演示)</option-->
                 <!-- 添加你自己的图片： -->
-                <!-- <option value="./images/frame1.png">相框 1</option> -->
-                <!-- <option value="./images/frame2.png">相框 2</option> -->
+                <option value="./images/sysu_100.png">相框 1</option>
+                <option value="./images/sysu_100_2.png">相框 2</option>
+                <option value="./images/sysu_stamp.png.png">相框 3</option>
+                <option value="./images/博学.png">博学</option>
+                <option value="./images/审问.png">审问</option>
+                <option value="./images/慎思.png">慎思</option>
+                <option value="./images/明辨.png">明辨</option>
+                <option value="./images/笃行.png">笃行</option>
+                <option value="./images/世纪中大山高水长.png">世纪中大山高水长</option> 
             </select>
         </div>
 
